@@ -36,4 +36,42 @@ router.beforeEach(async (to) => {
   return true;
 });
 
+/**
+ * Pulihkan diri saat chunk lama sudah tidak ada di server.
+ *
+ * Halaman dimuat sebagai potongan-potongan terpisah yang namanya memuat
+ * hash isi. Begitu ada build baru, nama-nama itu berubah. Pengguna yang
+ * sudah membuka aplikasi sebelum build masih memegang daftar nama lama,
+ * dan permintaan ke chunk lama akan gagal.
+ *
+ * Yang membuatnya sulit dilacak: server statis dengan fallback SPA
+ * membalas file yang tidak ada dengan index.html berstatus 200, bukan
+ * 404. Browser menolak menjalankan HTML sebagai modul, navigasi
+ * dibatalkan diam-diam, dan pengguna terlihat "tombolnya tidak berfungsi"
+ * tanpa satu pun pesan error.
+ *
+ * Muat ulang sekali menyelesaikannya — index.html baru membawa daftar
+ * nama chunk yang benar. Penanda di sessionStorage mencegah reload
+ * berulang kalau penyebabnya ternyata bukan ini.
+ */
+router.onError((err) => {
+  const gagalMuatModul = /Failed to fetch dynamically imported module|Importing a module script failed|error loading dynamically imported module/i
+    .test(err?.message || '');
+
+  if (!gagalMuatModul) return;
+
+  try {
+    if (sessionStorage.getItem('reload-chunk')) return;
+    sessionStorage.setItem('reload-chunk', '1');
+  } catch (_) { /* mode privat — biarkan reload sekali */ }
+
+  window.location.reload();
+});
+
+// Navigasi yang berhasil berarti chunk-nya termuat. Penanda dibuang supaya
+// kejadian berikutnya tetap tertangani.
+router.afterEach(() => {
+  try { sessionStorage.removeItem('reload-chunk'); } catch (_) { /* abaikan */ }
+});
+
 export default router;
