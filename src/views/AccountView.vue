@@ -11,7 +11,18 @@ const events = ref([]);
 const eventsFor = ref(null);
 const error = ref('');
 
-const CS_PHONE = import.meta.env.VITE_CS_PHONE || '628123456789';
+/**
+ * Nomor CS diambil dari server, bukan dipatok saat build.
+ *
+ * Alasannya: nomor WhatsApp sistem bisa berganti (diblokir, kartu hilang,
+ * ganti operator). Kalau nomornya ikut ter-compile ke dalam APK, setiap
+ * penggantian menuntut rilis baru ke Play Store dan menunggu pelanggan
+ * memperbarui aplikasinya — sementara yang butuh menghubungi CS justru
+ * pelanggan yang sedang bermasalah.
+ *
+ * VITE_CS_PHONE tinggal jadi cadangan kalau server tidak bisa dihubungi.
+ */
+const CS_PHONE = ref(import.meta.env.VITE_CS_PHONE || '');
 
 async function load() {
   try {
@@ -24,6 +35,12 @@ async function load() {
   } catch (e) {
     error.value = e.message;
   }
+
+  // Gagal memuat ini tidak mengganggu apa pun — nomor cadangan tetap dipakai.
+  try {
+    const info = await api.get('/public/info');
+    if (info?.cs_phone) CS_PHONE.value = info.cs_phone;
+  } catch (_) { /* biarkan */ }
 }
 
 /**
@@ -50,7 +67,11 @@ async function lihatRiwayat(s) {
 }
 
 async function hubungiAdmin() {
-  const url = `https://wa.me/${CS_PHONE}`;
+  if (!CS_PHONE.value) {
+    error.value = 'Nomor admin belum tersedia. Coba lagi sebentar.';
+    return;
+  }
+  const url = `https://wa.me/${CS_PHONE.value}`;
   try {
     const { Browser } = await import('@capacitor/browser');
     await Browser.open({ url });
