@@ -1,0 +1,199 @@
+/**
+ * Gaya global app pelanggan.
+ *
+ * Dirancang untuk WebView, bukan browser desktop:
+ * - safe-area-inset untuk notch dan gesture bar
+ * - target sentuh minimal 44px
+ * - font 16px pada input, supaya iOS tidak auto-zoom saat difokuskan
+ * - tanpa hover state (tidak ada kursor di HP)
+ */
+
+:root {
+  --bg: #f4f4f2;
+  --surface: #ffffff;
+  --surface-2: #faf9f7;
+  --border: #e5e4de;
+  --border-strong: #d0cfc7;
+  --text: #22221f;
+  --text-muted: #6b6a64;
+  --accent: #1f5c8f;
+  --accent-bg: #eaf1f8;
+  --danger: #9a2f2f;
+  --danger-bg: #fdf0ee;
+  --success: #2f6b28;
+  --success-bg: #e9f3e4;
+  --warning: #8a5a12;
+  --warning-bg: #fbf1de;
+  --radius: 10px;
+
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #131316;
+    --surface: #1d1d21;
+    --surface-2: #26262b;
+    --border: #32323a;
+    --border-strong: #43434c;
+    --text: #e8e7e3;
+    --text-muted: #9b9a94;
+    --accent: #7fb1e0;
+    --accent-bg: #1b2c3d;
+    --danger: #e59b9b;
+    --danger-bg: #3a2222;
+    --success: #9ccf92;
+    --success-bg: #21301c;
+    --warning: #e0b877;
+    --warning-bg: #352a17;
+  }
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body { height: 100%; }
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 15px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+
+  /* Matikan efek "bounce" dan seleksi teks — bikin terasa seperti app */
+  overscroll-behavior-y: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Kecuali di tempat yang memang perlu disalin, seperti nomor VA */
+.selectable { -webkit-user-select: text; user-select: text; }
+
+h1 { font-size: 20px; font-weight: 600; margin: 0 0 4px; }
+h2 { font-size: 16px; font-weight: 600; margin: 0 0 10px; }
+a { color: var(--accent); text-decoration: none; }
+
+/* ---------- Layout ---------- */
+.screen {
+  min-height: 100dvh;
+  padding: calc(var(--safe-top) + 16px) 16px calc(var(--safe-bottom) + 80px);
+  max-width: 520px;
+  margin: 0 auto;
+}
+.screen-plain {
+  min-height: 100dvh;
+  padding: calc(var(--safe-top) + 16px) 16px calc(var(--safe-bottom) + 24px);
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+.muted { color: var(--text-muted); }
+.small { font-size: 13px; }
+.center { text-align: center; }
+
+/* ---------- Card ---------- */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+/* ---------- Form ---------- */
+label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 6px; }
+input, select {
+  width: 100%;
+  padding: 12px 13px;
+  /* 16px wajib — kurang dari itu iOS akan zoom otomatis saat fokus */
+  font-size: 16px;
+  font-family: inherit;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  -webkit-user-select: text;
+  user-select: text;
+}
+input:focus, select:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: -1px;
+  border-color: var(--accent);
+}
+.field { margin-bottom: 14px; }
+
+/* Kotak OTP — angka besar dan renggang supaya mudah dibaca */
+.otp-input {
+  text-align: center;
+  font-size: 26px;
+  letter-spacing: 10px;
+  font-variant-numeric: tabular-nums;
+  padding: 14px 13px;
+}
+
+/* ---------- Button ---------- */
+button {
+  display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+  /* min-height 46px — target sentuh yang nyaman */
+  min-height: 46px;
+  padding: 11px 18px;
+  font-size: 15px; font-weight: 500; font-family: inherit;
+  border: 1px solid transparent; border-radius: var(--radius);
+  background: var(--accent); color: #fff;
+  cursor: pointer;
+}
+button:active { opacity: .8; }
+button:disabled { opacity: .45; }
+button.ghost { background: var(--surface); color: var(--text); border-color: var(--border-strong); }
+button.block { width: 100%; }
+button.link { background: none; color: var(--accent); border: 0; padding: 6px; min-height: 0; }
+
+/* ---------- Badge ---------- */
+.badge {
+  display: inline-block; padding: 3px 10px; border-radius: 999px;
+  font-size: 12px; font-weight: 500;
+}
+.badge-ok      { background: var(--success-bg); color: var(--success); }
+.badge-danger  { background: var(--danger-bg);  color: var(--danger); }
+.badge-warning { background: var(--warning-bg); color: var(--warning); }
+.badge-muted   { background: var(--surface-2);  color: var(--text-muted); }
+
+/* ---------- Alert ---------- */
+.alert { padding: 12px 14px; border-radius: var(--radius); font-size: 14px; margin-bottom: 12px; }
+.alert-error   { background: var(--danger-bg);  color: var(--danger); }
+.alert-ok      { background: var(--success-bg); color: var(--success); }
+.alert-warning { background: var(--warning-bg); color: var(--warning); }
+
+/* ---------- Bottom nav ---------- */
+.tabbar {
+  position: fixed; left: 0; right: 0; bottom: 0;
+  display: flex;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  padding-bottom: var(--safe-bottom);
+  z-index: 30;
+}
+.tab {
+  flex: 1;
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 10px 4px 8px;
+  font-size: 11px; font-weight: 500;
+  color: var(--text-muted);
+}
+.tab.active { color: var(--accent); }
+.tab-dot { width: 18px; height: 18px; border-radius: 50%; border: 2px solid currentColor; }
+.tab.active .tab-dot { background: currentColor; }
+
+/* ---------- Misc ---------- */
+.row { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
+.empty { padding: 40px 16px; text-align: center; color: var(--text-muted); }
+.spinner {
+  display: inline-block; width: 15px; height: 15px;
+  border: 2px solid currentColor; border-top-color: transparent;
+  border-radius: 50%; animation: spin .7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
